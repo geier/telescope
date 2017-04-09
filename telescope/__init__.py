@@ -47,7 +47,10 @@ def format_repo(repo):
         subheader = '{name} {tag_name} {published_at}'.format(**release)
         out.append(subheader)
         out.append('-' * len(subheader))
-        out.extend(release.get('body', "Tag release, no description").splitlines())
+        # body is sometimes None
+        text = release.get('body', "Tag release, no description") or ''
+        out.extend(text.splitlines())
+
     return '\n'.join([str(one) for one in out])  # for some reasons, there are sometimes Nones in here
 
 
