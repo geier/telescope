@@ -35,6 +35,21 @@ def parse_date(string):
     return dt.datetime.strptime(string, '%Y-%m-%dT%H:%M:%SZ')
 
 
+def format_repo(repo):
+    out = list()
+    out.append('')
+    out.append(repo['name'])
+    out.append('=' * len(repo['name']))
+    out.append(repo['description'])
+    out.append('https://github.com/{}/releases/'.format(repo['name']))
+    for release in repo['releases']:
+        out.append('')
+        subheader = '{name} {tag_name} {published_at}'.format(**release)
+        out.append(subheader)
+        out.append('-' * len(subheader))
+        out.extend(release.get('body', "Tag release, no description").splitlines())
+    return '\n'.join([str(one) for one in out])  # for some reasons, there are sometimes Nones in here
+
 
 def main():
     logging.info("tracking stars for user {}".format(USER))
@@ -68,19 +83,7 @@ def main():
             else:
                 break
         if repo_['releases']:
-            collection.append(repo_)
+            print(format_repo(repo_))
 
-    out = list()
-    for repo in collection:
-        out.append('')
-        out.append(repo['name'])
-        out.append('=' * len(repo['name']))
-        out.append(repo['description'])
-        out.append('https://github.com/{}/releases/'.format(repo['name']))
-        for release in repo['releases']:
-            out.append('')
-            subheader = '{name} {tag_name} {published_at}'.format(**release)
-            out.append(subheader)
-            out.append('-' * len(subheader))
-            out.extend(release.get('body', "Tag release, no description").splitlines())
-    print('\n'.join(out))
+if __name__ == '__main__':
+    main()
