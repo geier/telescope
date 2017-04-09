@@ -26,5 +26,11 @@ installing) or set the environment variables `GH_USER` and `GH_TOKEN`:
 telescope will work without an authentication token for as long as github's
 API allows it, but you might want to create_ one.
 
+
+Example
+-------
+
+see the `example output <example_output.md>`_
+
 .. _PyGithub: https://pypi.python.org/pypi/PyGithub
 .. _create: https://github.com/blog/1509-personal-api-tokens
