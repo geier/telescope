@@ -4,21 +4,19 @@
 Getting releases of starred github repos that occurred during the week.
 """
 
+# Configuration
+USER = 'geier'  # put your username here
+TOKEN = False   # set this or create a file token.txt containing the access token
+DAYS = 8        # getting releases for the last X days
+
 import datetime as dt
+import os
 import logging
 
 from github import Github
 
 logging.basicConfig(level=logging.INFO)
-
-
-USER = 'geier'
-TOKEN = False  # set this or create a file token.txt containing the access token
-
 NOW = dt.datetime.now()
-
-delta = dt.timedelta(days=7)
-
 
 def get_token():
     """Get the access token from file."""
@@ -55,11 +53,10 @@ def format_repo(repo):
 
 
 def main():
-    logging.info("tracking stars for user {}".format(USER))
+    user = os.environ.get('GH_USER') or USER
+    logging.info("tracking stars for user {}".format(user))
     logging.info("If this is not your username, change it in the python file")
-    user = Github(TOKEN or get_token()).get_user(USER)
-
-    collection = list()
+    user = Github(os.environ.get('GH_TOKEN') or TOKEN or get_token()).get_user(USER)
 
     for repo in user.get_starred():
         repo_ = {
@@ -70,7 +67,7 @@ def main():
         logging.info("getting {}".format(repo.full_name))
         for release in repo.get_releases():
             release_date = parse_date(release.raw_data['published_at'])
-            if NOW - release_date < delta:
+            if NOW - release_date < dt.timedelta(days=DAYS):
                 repo_['releases'].append(release.raw_data)
             else:
                 break  # TODO XXX we assume, that those releases are ordered
@@ -78,7 +75,7 @@ def main():
             sha = tag.raw_data['commit']['sha']
             commit = repo.get_commit(sha)
             tag_date = parse_date(commit.raw_data['commit']['author']['date'])
-            if (NOW - tag_date < delta):
+            if (NOW - tag_date < dt.timedelta(days=DAYS)):
                 if tag.name not in [r['name'] for r in repo_['releases']]:
                     tag.raw_data['tag_name'] = ''
                     tag.raw_data['published_at'] = commit.raw_data['commit']['author']['date']
@@ -87,6 +84,7 @@ def main():
                 break
         if repo_['releases']:
             print(format_repo(repo_))
+
 
 if __name__ == '__main__':
     main()
